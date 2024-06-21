@@ -93,18 +93,31 @@ def get_stats():
     st.session_state["stats"]=stats
   elif response.status_code==401:
     st.error(response.text)
+    st.stop()
   else:
     try:
       st.json(response.json())
     except:
       st.error(str(response))
 
+  response=request_spotify("segmented_stats")
+  if response.status_code==200:
+    st.session_state["seg_stats"]=response.json()
+  elif response.status_code==401:
+    st.error(response.text)
+  else:
+    try:
+      st.json(response.json())
+    except:
+      st.error(str(response))
+
+
 def mul_sel_cb(key):
   df = st.session_state["stats"][key]["df"]
   sel_options=st.session_state["mul_sel_"+key]
   df_options= get_options()
   options_keys= df_options[df_options['Label'].isin(sel_options)]['Key']
-  response=request_spotify("segmented_stats")
+  st.session_state["seg_stats"]
 
 
 
@@ -128,7 +141,7 @@ if "stats" in st.session_state:
       options = tab.multiselect(
         "Segmentation",
         get_options(),
-        None, key="mul_sel_"+key, on_change=mul_sel_cb, args=(key))
+        None, key="mul_sel_"+key, on_change=mul_sel_cb, args=(key,))
 
     df_chart_wide = st.session_state["stats"][key]["df"]
       

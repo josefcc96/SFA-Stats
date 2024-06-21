@@ -9,7 +9,17 @@
             "type": "debugpy",
             "request": "launch",
             "module": "streamlit",
-            "args": ["run","streamlit_app.py", "--server.enableCORS", "false", "--server.enableXsrfProtection","false"]
-        }
+            "args": ["run","streamlit_app.py", "--server.enableCORS", "false", "--server.enableXsrfProtection","false","--server.port", "8501"]
+        },
+        {
+            "name": "Attach",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+              "host": "localhost",
+              "port": 5678
+            }
+          }
+        
     ]
 }
