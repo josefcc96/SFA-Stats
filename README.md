@@ -12,7 +12,7 @@ This data app shows a simple demonstration of an interactive data explorer that 
 
 ## GitHub Codespaces
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/dataprofessor/movies-explorer?quickstart=1)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/josefcc96/SFA-Stats?quickstart=1)
 
 ## Reference
 
