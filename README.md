@@ -8,6 +8,6 @@
 
 ## GitHub Codespaces
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://cautious-lamp-q44r59x6vjpfwr7.github.dev)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/josefcc96/SFA-Stats?quickstart=1)
 
   
