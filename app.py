@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import requests
 import altair as alt
+import datetime
+
 
 def request_spotify(type):
   url_base="https://generic.wg.spotify.com/audience-engagement-view/v1/artist/{}/{}"
@@ -50,8 +52,13 @@ with st.expander('How its work'):
 
 st.session_state.artist_id = st.text_input(label="Artist ID", placeholder="3GzWXXXXXXXXXXXX")
 st.session_state.authorization = st.text_input(label="Authorization Token", placeholder="Bearer XXXXXXXXXXX")
-st.session_state.start_date = st.date_input('Start Date').strftime("%Y-%m-%d")
-st.session_state.end_date = st.date_input('End Date').strftime("%Y-%m-%d")
+date_max= datetime.datetime.now()-datetime.timedelta(days=30)
+# st.session_state.start_date = st.date_input('Start Date',date_max, max_value=date_max).strftime("%Y-%m-%d")
+dates = st.date_input('Date Filter', [date_max, date_max+datetime.timedelta(days=28)], max_value=date_max+datetime.timedelta(days=28))
+if len(dates)>1:
+  start_date, end_date=dates
+  st.session_state.end_date=end_date.strftime("%Y-%m-%d")
+  st.session_state.start_date=start_date.strftime("%Y-%m-%d")
 
 def format_number(num_str):
   num = float(num_str)
