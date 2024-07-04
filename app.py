@@ -32,7 +32,7 @@ def request_spotify(type):
 
 # Page title
 st.set_page_config(page_title='Spotify For Artist Stats', page_icon='📊')
-st.title('📊 Spotify For Artist Stats')
+st.title('📈 Spotify For Artist Stats ')
 
 with st.expander('How its work'):
   st.markdown('**What can this app do?**')
@@ -93,16 +93,17 @@ def get_stats():
     st.session_state["stats"]=stats
   elif response.status_code==401:
     st.error(response.text)
-    st.stop()
+    return
   else:
     try:
       st.json(response.json())
     except:
       st.error(str(response))
 
-  response=request_spotify("segmented_stats")
+  response=request_spotify("segmented-stats")
   if response.status_code==200:
-    st.session_state["seg_stats"]=response.json()
+    seg_response=response.json()
+    st.session_state["seg_stats"]=seg_response["segmentsMap"]
   elif response.status_code==401:
     st.error(response.text)
   else:
@@ -113,13 +114,24 @@ def get_stats():
 
 
 def mul_sel_cb(key):
-  df = st.session_state["stats"][key]["df"]
-  sel_options=st.session_state["mul_sel_"+key]
+  df_key= "df_mul_sel_"+key
   df_options= get_options()
-  options_keys= df_options[df_options['Label'].isin(sel_options)]['Key']
-  st.session_state["seg_stats"]
-
-
+  if "mul_sel_"+key in st.session_state:
+    sel_options = st.session_state["mul_sel_"+key]
+    options_keys= df_options[df_options['Label'].isin(sel_options)]['Key']
+    if len(options_keys) == 0 and df_key in st.session_state:
+      del st.session_state[df_key]
+      return
+    df_seg = pd.DataFrame()
+    for option in options_keys:
+      data = st.session_state["seg_stats"][option][key]['current_period_timeseries']
+      wide=pd.DataFrame(data)
+      wide.reset_index(drop=True, inplace=True)
+      wide['y'] = pd.to_numeric(wide.y)
+      wide = wide.rename(columns={"x":"date", "y":option})
+      wide = wide.melt('date', var_name='stat', value_name='value')
+      df_seg= pd.concat([df_seg ,wide], axis=0)
+    st.session_state[df_key] = df_seg
 
 st.button(
         label="Get Stats",
@@ -141,14 +153,18 @@ if "stats" in st.session_state:
       options = tab.multiselect(
         "Segmentation",
         get_options(),
-        None, key="mul_sel_"+key, on_change=mul_sel_cb, args=(key,))
+        None, key="mul_sel_"+key)
+    mul_sel_cb(key)
+    wide = st.session_state["stats"][key]["df"]
+    max=int(1.2*(wide[key].max()))
 
-    df_chart_wide = st.session_state["stats"][key]["df"]
-      
-
-    max=int(1.2*(df_chart_wide[key].max()))
-
-    df_chart = df_chart_wide.melt('date', var_name='stat', value_name='value')
+    if "df_mul_sel_"+key in st.session_state:
+      wide=wide.rename(columns={key:("total_"+key).upper()})
+      chart_long = wide.melt('date', var_name='stat', value_name='value')
+      df_chart = pd.concat([chart_long, st.session_state["df_mul_sel_"+key]], axis=0)
+    else:
+      df_chart = wide.melt('date', var_name='stat', value_name='value')
+    
     # Display chart    
     brush = alt.selection_interval(encodings=['x'])
     base = alt.Chart(df_chart).mark_line(point=True).encode(
@@ -165,7 +181,7 @@ if "stats" in st.session_state:
     lower = base.properties(height=80).add_params(brush)
     tab.altair_chart(upper & lower, use_container_width=True)
     # Display DataFrame
-    tab.dataframe(df_chart_wide)
+    tab.dataframe(df_chart.pivot(index='date', columns='stat', values='value').reset_index())
 
 
 
